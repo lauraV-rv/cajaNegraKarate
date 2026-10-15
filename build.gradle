@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+}
+
+group = 'cajanegra2'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    karateVersion = '1.4.1'
+}
+
+dependencies {
+    testImplementation "com.intuit.karate:karate-junit5:${karateVersion}"
+    testImplementation "ch.qos.logback:logback-classic:1.5.6"
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+
+    // Los .feature contienen tildes: se fuerza UTF-8 en la JVM de pruebas (también en Windows con JDK 17)
+    jvmArgs '-Dfile.encoding=UTF-8'
+
+    systemProperty 'karate.output.dir', 'target/'
+
+    // Permite filtrar por tag: ./gradlew test -Dkarate.options="--tags @Issue-3"
+    // Solo se transmite cuando se indica (evita pasar un valor null)
+    if (System.getProperty('karate.options')) {
+        systemProperty 'karate.options', System.getProperty('karate.options')
+    }
+
+    // Las pruebas modifican estado remoto: Gradle nunca debe saltarlas por "UP-TO-DATE"
+    outputs.upToDateWhen { false }
+}
+
+clean {
+    delete 'target'
+}
